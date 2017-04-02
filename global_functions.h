@@ -8,10 +8,19 @@ using namespace std;
 //prints the contents of a 2D array
 inline extern void printBoard(int** board, int size)
 {
+	cout<<"Size: "<<size<<endl;
 	for(int x =0; x < size; x++)
 	{
 		for(int y =0; y < size; y++)
-			cout<<"["<<board[x][y]<<"]";
+		{
+			//1 = X
+			if(board[x][y]==1)
+				cout<<"[X]";
+			else if(board[x][y]==2)
+				cout<<"[O]";
+			else
+				cout<<"[ ]";
+		}
 		cout<<endl;
 	}
 

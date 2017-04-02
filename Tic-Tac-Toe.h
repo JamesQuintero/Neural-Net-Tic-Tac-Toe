@@ -22,6 +22,7 @@ class TicTacToe
 		int AI_piece;
 
 		NN nn;
+		NN nn2;
 
 	public:
 		TicTacToe();
@@ -36,7 +37,7 @@ class TicTacToe
 		//player's turn to move. returns true if successful
 		bool playersMove();
 		//AI's turn to move. returns true if successful
-		bool AIMove();
+		bool AIMove(int AI_version);
 		//returns true if player won the game
 		bool playerWon();
 		//returns true if AI won the game

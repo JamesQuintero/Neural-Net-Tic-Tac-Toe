@@ -11,13 +11,18 @@ TicTacToe::TicTacToe()
 	cout<<"Initialized"<<endl;
 
 	NN nn;
-	// nn.newNode(nn.start, "000010000");
-	// nn.printNet(nn.start);
+	NN nn2;
+
 
 	//player is O
 	player_piece=2;
 	//AI is X
 	AI_piece=1;
+
+	// //1 is X
+	// nn.piece = AI_piece;
+	// //2 is O
+	// nn2.piece = player_piece;
 
 	resetGame();
 }
@@ -25,42 +30,163 @@ TicTacToe::TicTacToe()
 //runs the game
 void TicTacToe::run()
 {
-
-	bool player_won=false;
-	bool AI_won=false;
-	bool success=true;
-	//goes forever until someone wins or until someone has an unsuccessful move (board is full)
-	while(player_won==false && AI_won==false && success==true)
+	while(true)
 	{
 
-		if(playerWon())
-			player_won=true;
-		else if(AIWon())
-			AI_won=true;
-		//if no one's yet run, continue the game
+		cout<<"Menu: "<<endl;
+		cout<<"1) Human vs AI"<<endl;
+		cout<<"2) AI vs AI"<<endl;
+		cout<<"3) Print Neural Nets"<<endl;
+
+		cout<<"Choice: ";
+		int choice;
+		cin>>choice;
+
+
+		//Human vs AI
+		if(choice==1)
+		{
+				nn.piece = AI_piece;
+
+				cout<<"New game Human vs AI"<<endl;
+				resetGame();
+
+				bool player_won=false;
+				bool AI_won=false;
+				bool success=true;
+				//goes forever until someone wins or until someone has an unsuccessful move (board is full)
+				while(player_won==false && AI_won==false && success==true)
+				{
+
+					if(playerWon())
+					{
+						player_won=true;
+						cout<<endl;
+						cout<<"Player WON"<<endl;
+						cout<<endl<<endl;
+						nn.badOutcome();
+					}
+					else if(AIWon())
+					{
+						AI_won=true;
+						cout<<"AI WON"<<endl;
+						cout<<endl<<endl;
+						nn.goodOutcome();
+					}
+					//if no one's yet run, continue the game
+					else
+					{
+						//player moves
+						if(isPlayersTurn())
+						{
+							success = playersMove();
+							// break;
+						}
+						//AI moves
+						else
+						{
+							success = AIMove(1);
+							// break;
+						}
+
+						changeTurn();
+					}
+				}
+
+				//game was a tie
+				if (success==false)
+				{
+					nn.badOutcome();
+				}
+		}
+		//AI vs AI
+		else if(choice==2)
+		{
+				nn.piece = AI_piece;
+				nn2.piece = player_piece;
+
+				int num_games=0;
+				cout<<"Num games: ";
+				cin>>num_games;
+
+				for(int x =0; x < num_games; x++)
+				{
+						cout<<"New game AI vs AI"<<endl;
+						resetGame();
+
+						bool AI_won=false;
+						bool AI2_won=false;
+						bool success=true;
+						//goes forever until someone wins or until someone has an unsuccessful move (board is full)
+						while(AI_won==false && AI2_won==false && success==true)
+						{
+
+							if(AIWon())
+							{
+								AI_won=true;
+								cout<<"AI WON"<<endl;
+								cout<<endl<<endl;
+								nn.goodOutcome();
+								nn2.badOutcome();
+							}
+							//AI #2 counts as player
+							else if(playerWon())
+							{
+								AI2_won=true;
+								cout<<endl;
+								cout<<"AI2 WON"<<endl;
+								cout<<endl<<endl;
+								nn2.goodOutcome();
+								nn.badOutcome();
+							}
+							//if no one's yet run, continue the game
+							else
+							{
+								//player moves
+								if(isPlayersTurn())
+									success = AIMove(2);
+								//AI moves
+								else
+									success = AIMove(1);
+
+								changeTurn();
+							}
+
+							// cout<<"Continue...";
+							// system("pause");
+						}
+
+						//game was a tie
+						if (success==false)
+						{
+							nn.badOutcome();
+							nn2.badOutcome();
+						}
+				}
+				
+		}
+		//Prints the neural nets
 		else
 		{
-			//player moves
-			if(isPlayersTurn())
-			{
-				success = playersMove();
-				break;
-			}
-			//AI moves
-			else
-			{
-				success = AIMove();
-				break;
-			}
+			cout<<"1) AI #1: "<<endl;
+			cout<<"2) AI #2: "<<endl;
 
-			changeTurn();
+			cout<<"Choice: ";
+			cin>>choice;
+
+			if(choice==1)
+				nn.printNet(nn.start);
+			else
+				nn2.printNet(nn2.start);
+
 		}
+	
 	}
 
 }
 
 
-//Player turn to move. returns true if successful
+//Player's turn to move. returns true if successful
 bool TicTacToe::playersMove()
 {
 	cout<<"Player's move. "<<endl;
@@ -104,32 +230,51 @@ bool TicTacToe::playersMove()
 	cout<<"New board: "<<endl;
 	printBoard(board, size);
 
+	nn.playerMove(board);
+
+	cout<<endl<<endl<<endl;
+
 	return true;
 }
 
-bool TicTacToe::AIMove()
+//AI's turn to move. returns true if successful. 
+bool TicTacToe::AIMove(int AI_version)
 {
+	cout<<endl<<endl<<endl;
 	cout<<"AI's move. "<<endl;
 	cout<<"Current board: "<<endl;
 	printBoard(board, size);
 
 	int** possible_moves = possibleMoves();
 
-	cout<<"Possible moves: "<<endl;
-	for(int x =0; x < size*size; x++)
-	{
-		cout<<"("<<possible_moves[x][0]<<", "<<possible_moves[x][1]<<")"<<endl;
-	}
+	//no possible moves
+	if(possible_moves[0][0]==-1)
+		return false;
 
-	int** new_board = nn.move(board, possible_moves);
+
+	int** new_board;
+	if(AI_version==1)
+	{
+		new_board = nn.AIMove(board, possible_moves);
+		nn2.playerMove(new_board);
+	}
+	else if(AI_version==2)
+	{
+		new_board = nn2.AIMove(board, possible_moves);
+		nn.playerMove(new_board);
+	}
+	board = new_board;
 
 	cout<<"New board: "<<endl;
 	printBoard(board, size);
 
-	nn.printNet(nn.start);
+
+	//nn2.playerMove(board);
+
+	cout<<endl<<endl<<endl;
 
 
-	return false;
+	return true;
 }
 
 //returns coordinates of possible board configurations for next move consideration.
@@ -241,4 +386,7 @@ void TicTacToe::resetGame()
 {
 	board = createMatrix(size);
 	turn = false;
+
+	nn.ptr = nn.start;
+	nn2.ptr = nn2.start;
 }
