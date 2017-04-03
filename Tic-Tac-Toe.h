@@ -1,3 +1,7 @@
+//
+// Copyright (c) James Quintero 2017
+//
+
 #include <iostream>
 #include <string>
 #include "NN.h"
@@ -18,10 +22,14 @@ class TicTacToe
 		int size=3;
 		//if true, player goes first. AI otherwise
 		bool turn;
+		//2, or O
 		int player_piece;
+		//1, or X
 		int AI_piece;
 
+		//AI #1
 		NN nn;
+		//AI #2
 		NN nn2;
 
 	public:

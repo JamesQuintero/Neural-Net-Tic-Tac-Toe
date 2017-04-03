@@ -5,10 +5,9 @@
 
 using namespace std;
 
-//prints the contents of a 2D array
+//prints the contents of a 2D array into a tic-tac-toe pattern
 inline extern void printBoard(int** board, int size)
 {
-	cout<<"Size: "<<size<<endl;
 	for(int x =0; x < size; x++)
 	{
 		for(int y =0; y < size; y++)
@@ -74,24 +73,16 @@ inline extern int** matrixBoard(string board, int side_size)
 //returns string version of the board if provided with matrix version
 inline extern string stringBoard(int** board, int side_size)
 {
-	//char new_board[] = new char[side_size*side_size];
-	//int index=0;
 	string new_board="";
 
 	int row=0;
 	int col=0;
 	for(int x =0; x < side_size; x++)
 	{
-		
 		for(int y =0; y < side_size; y++)
-		{
-			//new_board[index] = to_string(board[x][y]).c_str();
 			new_board += to_string(board[x][y]);
-		}
 	}
 
-
-	// return string(new_board);
 	return new_board;
 }
 

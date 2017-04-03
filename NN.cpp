@@ -1,3 +1,7 @@
+//
+// Copyright (c) James Quintero 2017
+//
+
 #include <iostream>
 #include <string>
 #include <random>
@@ -12,25 +16,7 @@ NN::NN()
 {
 	start = new node();
 	start->board = createMatrix(size);
-
 	this->ptr = start;
-
-	// start->next[start->next_index] = new node();
-	// start->next_index++;
-
-	// start->next[start->next_index] = new node();
-	// start->next_index++;
-
-	// ptr = start->next[0];
-	// ptr->board="000010000";
-
-	// ptr->next = new node*[9];
-	// ptr->next[ptr->next_index] = new node();
-	// ptr->next_index++;
-	// ptr->next[0]->board="000010100";
-
-	// ptr = start->next[1];
-	// ptr->board="000012000";
 }
 
 //links a new node to ptr, with initialized board
@@ -45,6 +31,7 @@ void NN::newNode(node * ptr, int** board)
 	//increments number of next nodes
 	ptr->next_index++;
 
+	//pointer to parent
 	next->prev = ptr;	
 }
 
@@ -55,6 +42,7 @@ void NN::playerMove(int** board)
 	bool exists=false;
 	for(int x =0; x < ptr->next_index; x++)
 	{
+		//checks if the node's board matches the parameter
 		bool board_matches=true;
 		for(int y=0; y < size; y++)
 		{
@@ -69,17 +57,18 @@ void NN::playerMove(int** board)
 		}
 
 
-		//if board already exists, move to it
+		//if board does match, move to it
 		if(board_matches)
 		{
 			node * temp = ptr;
 			ptr = ptr->next[x];
 			ptr->prev = temp;
 			exists=true;
+			break;
 		}
 	}
 
-	//if neuron doesn't exist, create it
+	//if node with parameter board doesn't exist, create it
 	if(exists==false)
 	{
 		//creates a copy of the board
@@ -87,51 +76,32 @@ void NN::playerMove(int** board)
 		newNode(ptr, new_board);
 		ptr = ptr->next[ptr->next_index-1];
 	}
+
 }
 
 
 //neural network determines next best move and returns its coordinates
 int** NN::AIMove(int** board, int** possible_moves)
 {
-	// cout<<"GOT HERE"<<endl;
-	// cout<<"Next index: "<<ptr->next_index<<endl;
-
-	// cout<<"ptr's board: "<<endl;
-	// printBoard(ptr->board, size);
-	// cout<<"Passed in board: "<<endl;
-	// printBoard(board, size);
-	// cout<<endl;
-
-	// cout<<"Possible moves: "<<endl;
-	// for(int x =0; x < size*size; x++)
-	// {
-	// 	cout<<"("<<possible_moves[x][0]<<", "<<possible_moves[x][1]<<")"<<endl;
-	// }
-
-	// cout<<"Road ahead: "<<endl;
-	// printNet(ptr);
-
 
 	//temporary pointer
 	node * temp = ptr;
 
 	//gets child node with highest good variable
 	double highest=0;
+	int num_ties=0;
 	for(int x =0; x < ptr->next_index; x++)
 	{
-		// cout<<"X: "<<x<<endl;
-		// printNode(ptr->next[x]);
-
-
+		//tracks the child node with the highest good
 		if(ptr->next[x]->good > highest)
 		{
 			highest = ptr->next[x]->good;
 			temp = ptr->next[x];
-			// cout<<"Highest good: "<<highest<<endl;
+			num_ties=0;
 		}
-
-
-
+		//counts number of ties so that the AI can pick between them randomly
+		else if(ptr->next[x]->good == highest)
+			num_ties++;
 
 		//removes next move from possible moves so that only new possible moves are left
 		for(int y =0; y < size*size; y++)
@@ -149,8 +119,6 @@ int** NN::AIMove(int** board, int** possible_moves)
 		}
 	}
 
-	// cout<<"GOT HERE 2"<<endl;
-
 	//remaining possible moves are new moves, and should be added to the neural net
 	int num_added=0;
 	for(int y =0; y < size*size; y++)
@@ -167,18 +135,25 @@ int** NN::AIMove(int** board, int** possible_moves)
 		}
 	}
 
+	
+
 	//if the highest is lower than the default of 0.5, pick random move from new positions
-	if(highest<default_good && num_added>0)
+	// if(highest<default_good && num_added>0)
+	if(num_ties>=1 || num_added>0)
 	{
-		// temp = ptr->next[ptr->next_index-1];
-		//random numbers between 0 and next_index. 
-		//if neuron at ptr->next[random]==0.5, go there. 
-		//else, continue guessing. 
+		//if the current highest isn't the actual highest after adding new nodes
+		if(num_added>0)
+			highest = default_good;
+
 		std::random_device rd;     // only used once to initialise (seed) engine
 		std::mt19937 rng(rd());    // random-number engine used (Mersenne-Twister in this case)
-		std::uniform_int_distribution<int> uni(ptr->next_index-num_added, ptr->next_index-1); // guaranteed unbiased
+		std::uniform_int_distribution<int> uni(0, ptr->next_index-1); // guaranteed unbiased
 
+		//chooses random child if many have same weight
 		int random_integer=uni(rng);
+		while(ptr->next[random_integer]->good < highest)
+			random_integer=uni(rng);
+
 		temp = ptr->next[random_integer];
 	}
 
@@ -200,11 +175,9 @@ void NN::goodOutcome()
 	while (ptr!=start)
 	{
 		ptr->good += increment*ptr->good;
+		// ptr->good += increment;
 		//cuts percentage increment
 		increment/=2;
-
-		// cout<<"Currently at "<<endl;
-		// printNode(ptr);
 
 		//moves up to parent
 		ptr = ptr->prev;
@@ -219,18 +192,34 @@ void NN::badOutcome()
 	while (ptr!=start)
 	{
 		ptr->good -= increment*ptr->good;
+		// ptr->good -= increment;
 		//cuts percentage increment
 		increment/=2;
 
-		// cout<<"Currently at "<<endl;
+		// cout<<"Current: "<<endl;
 		// printNode(ptr);
+
+		//moves up to parent
+		ptr = ptr->prev;
+		// cout<<"Prev: "<<endl;
+		// printNode(ptr);
+	}
+}
+
+//the series of steps had a good outcome, to add the weights to good for the steps
+void NN::okayOutcome()
+{
+	double increment = perc/2;
+
+	while (ptr!=start)
+	{
+		ptr->good -= increment*ptr->good;
+		increment/=2;
 
 		//moves up to parent
 		ptr = ptr->prev;
 	}
 }
-
-
 
 
 //prints node's contents in a readable format
@@ -242,7 +231,7 @@ void NN::printNode(node * ptr)
 	cout<<"Good: "<<ptr->good<<endl;
 }
 
-//prints the neural network. 
+//prints the neural network in one long output.
 void NN::printNet(node * ptr)
 {
 	printNode(ptr);

@@ -1,3 +1,7 @@
+//
+// Copyright (c) James Quintero 2017
+//
+
 #include <iostream>
 #include <string>
 
@@ -13,7 +17,7 @@ using namespace std;
 class NN
 {
 	private:
-
+		//side length of the tic-tac-toe board
 		static const int size = 3;
 		//every new "neuron" has a good weight of 0.5, meaning its path is not good or bad
 		static constexpr double default_good = 0.5;
@@ -23,7 +27,6 @@ class NN
 		
 		struct node
 		{
-			// string board="000000000";
 			int** board;
 			double good = default_good;
 			
@@ -44,7 +47,6 @@ class NN
 		NN();
 		//links a new node to ptr, with initialized board
 		void newNode(node * ptr, int** board);
-		//int** matrixBoard(string board);
 
 		//returns a new board containing NN's next move
 		int** AIMove(int** board, int** possible_moves);
@@ -55,6 +57,8 @@ class NN
 		void goodOutcome();
 		//decrements the good variables if the outcome was good
 		void badOutcome();
+		//decrements the good variables only half if the outcome was okay
+		void okayOutcome();
 
 
 

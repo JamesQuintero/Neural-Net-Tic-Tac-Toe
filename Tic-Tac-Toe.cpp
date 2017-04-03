@@ -1,3 +1,7 @@
+//
+// Copyright (c) James Quintero 2017
+//
+
 #include <iostream>
 #include <string>
 #include "global_functions.h"
@@ -8,8 +12,6 @@ using namespace std;
 
 TicTacToe::TicTacToe()
 {
-	cout<<"Initialized"<<endl;
-
 	NN nn;
 	NN nn2;
 
@@ -18,11 +20,6 @@ TicTacToe::TicTacToe()
 	player_piece=2;
 	//AI is X
 	AI_piece=1;
-
-	// //1 is X
-	// nn.piece = AI_piece;
-	// //2 is O
-	// nn2.piece = player_piece;
 
 	resetGame();
 }
@@ -78,16 +75,10 @@ void TicTacToe::run()
 					{
 						//player moves
 						if(isPlayersTurn())
-						{
 							success = playersMove();
-							// break;
-						}
 						//AI moves
 						else
-						{
 							success = AIMove(1);
-							// break;
-						}
 
 						changeTurn();
 					}
@@ -95,9 +86,8 @@ void TicTacToe::run()
 
 				//game was a tie
 				if (success==false)
-				{
 					nn.badOutcome();
-				}
+
 		}
 		//AI vs AI
 		else if(choice==2)
@@ -152,15 +142,17 @@ void TicTacToe::run()
 								changeTurn();
 							}
 
-							// cout<<"Continue...";
 							// system("pause");
+
 						}
 
 						//game was a tie
 						if (success==false)
 						{
 							nn.badOutcome();
-							nn2.badOutcome();
+							// nn2.badOutcome();
+							// nn.okayOutcome();
+							nn2.okayOutcome();
 						}
 				}
 				
@@ -227,9 +219,11 @@ bool TicTacToe::playersMove()
 	//player places piece
 	board[row][col]=player_piece;
 
+	//prints the board
 	cout<<"New board: "<<endl;
 	printBoard(board, size);
 
+	//add player's move to neural net
 	nn.playerMove(board);
 
 	cout<<endl<<endl<<endl;
@@ -240,10 +234,11 @@ bool TicTacToe::playersMove()
 //AI's turn to move. returns true if successful. 
 bool TicTacToe::AIMove(int AI_version)
 {
-	cout<<endl<<endl<<endl;
-	cout<<"AI's move. "<<endl;
-	cout<<"Current board: "<<endl;
-	printBoard(board, size);
+	// cout<<endl<<endl<<endl;
+	// cout<<"AI's move. "<<endl;
+	// cout<<"Current board: "<<endl;
+	// printBoard(board, size);
+	// cout<<"Before possible moves: "<<endl;
 
 	int** possible_moves = possibleMoves();
 
@@ -253,11 +248,13 @@ bool TicTacToe::AIMove(int AI_version)
 
 
 	int** new_board;
+	//AI #1 moves, and its move gets added to AI #2
 	if(AI_version==1)
 	{
 		new_board = nn.AIMove(board, possible_moves);
 		nn2.playerMove(new_board);
 	}
+	//AI #2 moves, and its move gets added to AI #1
 	else if(AI_version==2)
 	{
 		new_board = nn2.AIMove(board, possible_moves);
@@ -265,11 +262,9 @@ bool TicTacToe::AIMove(int AI_version)
 	}
 	board = new_board;
 
+	//prints the board
 	cout<<"New board: "<<endl;
 	printBoard(board, size);
-
-
-	//nn2.playerMove(board);
 
 	cout<<endl<<endl<<endl;
 
@@ -301,6 +296,7 @@ int** TicTacToe::possibleMoves()
 		}
 	}
 
+	//voids rest of list
 	for(int x =index; x < size*size; x++)
 	{
 		int* pair = new int[2];
