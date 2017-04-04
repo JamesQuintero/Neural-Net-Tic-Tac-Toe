@@ -1,7 +1,7 @@
 # Neural-Net-Tic-Tac-Toe
 Neural Network for Tic-Tac-Toe
 
-My first try at a neural network. It's a feedforward neural network that uses unsupervised learning. 
+My first try at a neural network. It's a feedforward neural network that uses reinforcement learning. 
 
 To use:   
 * Choose option #1 in the menu, and you'll see that the AI makes random moves because it hasn't yet learned how to play.   
