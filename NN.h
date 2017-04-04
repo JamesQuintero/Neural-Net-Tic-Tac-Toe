@@ -19,8 +19,6 @@ class NN
 	private:
 		//side length of the tic-tac-toe board
 		static const int size = 3;
-		//every new "neuron" has a good weight of 0.5, meaning its path is not good or bad
-		static constexpr double default_good = 0.5;
 		//percentage of the "neuron" that gets increment if its path results in a good outcome
 		static constexpr double perc = 0.25;
 
@@ -28,7 +26,10 @@ class NN
 		struct node
 		{
 			int** board;
-			double good = default_good;
+			// double good = default_good;
+			double good=0;
+			double bad=0;
+			double okay=0;
 			
 			int next_index=0;
 			int prev_index=0;
@@ -53,6 +54,7 @@ class NN
 		void playerMove(int** board);
 		void printNode(node * ptr);
 		void printNet(node * ptr);
+		double getRatio(node * ptr);
 		//increments the good variables if the outcome was good
 		void goodOutcome();
 		//decrements the good variables if the outcome was good

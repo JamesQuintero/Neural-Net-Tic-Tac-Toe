@@ -4,7 +4,8 @@
 
 #include <iostream>
 #include <string>
-#include <random>
+#include <ctime>
+
 #include "global_functions.h"
 #include "NN.h"
 
@@ -17,6 +18,8 @@ NN::NN()
 	start = new node();
 	start->board = createMatrix(size);
 	this->ptr = start;
+
+	srand(time(0));  // needed once per program run
 }
 
 //links a new node to ptr, with initialized board
@@ -39,6 +42,7 @@ void NN::newNode(node * ptr, int** board)
 //Player moves, so add to neural net
 void NN::playerMove(int** board)
 {
+
 	bool exists=false;
 	for(int x =0; x < ptr->next_index; x++)
 	{
@@ -87,20 +91,23 @@ int** NN::AIMove(int** board, int** possible_moves)
 	//temporary pointer
 	node * temp = ptr;
 
-	//gets child node with highest good variable
-	double highest=0;
-	int num_ties=0;
+	//gets child node with highest ratio of good to bad
+	double highest = -100;
+	int num_ties = 0;
 	for(int x =0; x < ptr->next_index; x++)
 	{
+		
+		double ratio = getRatio(ptr->next[x]);
+
 		//tracks the child node with the highest good
-		if(ptr->next[x]->good > highest)
+		if(ratio > highest)
 		{
-			highest = ptr->next[x]->good;
+			highest = ratio;
 			temp = ptr->next[x];
-			num_ties=0;
+			num_ties = 0;
 		}
 		//counts number of ties so that the AI can pick between them randomly
-		else if(ptr->next[x]->good == highest)
+		else if(ratio == highest)
 			num_ties++;
 
 		//removes next move from possible moves so that only new possible moves are left
@@ -138,21 +145,20 @@ int** NN::AIMove(int** board, int** possible_moves)
 	
 
 	//if the highest is lower than the default of 0.5, pick random move from new positions
-	// if(highest<default_good && num_added>0)
 	if(num_ties>=1 || num_added>0)
 	{
 		//if the current highest isn't the actual highest after adding new nodes
 		if(num_added>0)
-			highest = default_good;
+			highest = 0;
 
-		std::random_device rd;     // only used once to initialise (seed) engine
-		std::mt19937 rng(rd());    // random-number engine used (Mersenne-Twister in this case)
-		std::uniform_int_distribution<int> uni(0, ptr->next_index-1); // guaranteed unbiased
+		int random_integer;
+		double ratio = highest-1; //initialize so that the while loop is run at least once
 
-		//chooses random child if many have same weight
-		int random_integer=uni(rng);
-		while(ptr->next[random_integer]->good < highest)
-			random_integer=uni(rng);
+		while(ratio < highest)
+		{
+			random_integer = (rand() % ptr->next_index);			
+			ratio = getRatio(ptr->next[random_integer]);
+		}
 
 		temp = ptr->next[random_integer];
 	}
@@ -167,16 +173,23 @@ int** NN::AIMove(int** board, int** possible_moves)
 	
 }
 
+//gets ratio of the weights
+double NN::getRatio(node * ptr)
+{
+	double good = ptr->good;
+	double bad = ptr->bad;
+	double okay = ptr->okay;
+	double ratio = (good+okay)-bad;
+	return ratio;
+}
+
 //the series of steps had a good outcome, to add the weights to good for the steps
 void NN::goodOutcome()
 {
 	double increment = perc;
-
 	while (ptr!=start)
 	{
-		ptr->good += increment*ptr->good;
-		// ptr->good += increment;
-		//cuts percentage increment
+		ptr->good += increment;
 		increment/=2;
 
 		//moves up to parent
@@ -188,32 +201,23 @@ void NN::goodOutcome()
 void NN::badOutcome()
 {
 	double increment = perc;
-
 	while (ptr!=start)
 	{
-		ptr->good -= increment*ptr->good;
-		// ptr->good -= increment;
-		//cuts percentage increment
+		ptr->bad += increment;
 		increment/=2;
-
-		// cout<<"Current: "<<endl;
-		// printNode(ptr);
 
 		//moves up to parent
 		ptr = ptr->prev;
-		// cout<<"Prev: "<<endl;
-		// printNode(ptr);
 	}
 }
 
 //the series of steps had a good outcome, to add the weights to good for the steps
 void NN::okayOutcome()
 {
-	double increment = perc/2;
-
+	double increment = perc;
 	while (ptr!=start)
 	{
-		ptr->good -= increment*ptr->good;
+		ptr->okay += increment;
 		increment/=2;
 
 		//moves up to parent
@@ -229,6 +233,8 @@ void NN::printNode(node * ptr)
 	printBoard(ptr->board, size);
 	cout<<"Num next nodes: "<<ptr->next_index<<endl;
 	cout<<"Good: "<<ptr->good<<endl;
+	cout<<"Bad: "<<ptr->bad<<endl;
+	cout<<"Okay: "<<ptr->okay<<endl;
 }
 
 //prints the neural network in one long output.

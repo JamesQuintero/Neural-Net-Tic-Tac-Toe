@@ -150,9 +150,8 @@ void TicTacToe::run()
 						if (success==false)
 						{
 							nn.badOutcome();
-							// nn2.badOutcome();
-							// nn.okayOutcome();
-							nn2.okayOutcome();
+							nn2.badOutcome();
+							// nn2.okayOutcome();
 						}
 				}
 				
@@ -191,18 +190,19 @@ bool TicTacToe::playersMove()
 	bool valid_move=false;
 	while(valid_move==false)
 	{
-		cout<<"Row: ";
-		cin>>row;
-
-		cout<<"Col: ";
-		cin>>col;
-		cout<<endl;
 
 		int** possible_moves = possibleMoves();
 
 		//no possible moves
 		if(possible_moves[0][0]==-1)
 			return false;
+
+		cout<<"Row: ";
+		cin>>row;
+
+		cout<<"Col: ";
+		cin>>col;
+		cout<<endl;
 
 		//determines if given move is a possible move
 		for(int x =0; x < size*size; x++)
@@ -219,10 +219,6 @@ bool TicTacToe::playersMove()
 	//player places piece
 	board[row][col]=player_piece;
 
-	//prints the board
-	cout<<"New board: "<<endl;
-	printBoard(board, size);
-
 	//add player's move to neural net
 	nn.playerMove(board);
 
@@ -234,13 +230,9 @@ bool TicTacToe::playersMove()
 //AI's turn to move. returns true if successful. 
 bool TicTacToe::AIMove(int AI_version)
 {
-	// cout<<endl<<endl<<endl;
-	// cout<<"AI's move. "<<endl;
-	// cout<<"Current board: "<<endl;
-	// printBoard(board, size);
-	// cout<<"Before possible moves: "<<endl;
-
 	int** possible_moves = possibleMoves();
+
+	cout<<"AI_version: "<<AI_version<<endl;
 
 	//no possible moves
 	if(possible_moves[0][0]==-1)
@@ -248,6 +240,11 @@ bool TicTacToe::AIMove(int AI_version)
 
 
 	int** new_board;
+	// //only when player vs AI
+	// if(AI_version==0)
+	// {
+	// 	new_board = nn.AIMove(board, possible_moves);
+	// }
 	//AI #1 moves, and its move gets added to AI #2
 	if(AI_version==1)
 	{
