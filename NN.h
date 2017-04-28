@@ -52,8 +52,6 @@ class NN
 		//returns a new board containing NN's next move
 		int** AIMove(int** board, int** possible_moves);
 		void playerMove(int** board);
-		void printNode(node * ptr);
-		void printNet(node * ptr);
 		double getRatio(node * ptr);
 		//increments the good variables if the outcome was good
 		void goodOutcome();
@@ -61,6 +59,12 @@ class NN
 		void badOutcome();
 		//decrements the good variables only half if the outcome was okay
 		void okayOutcome();
+
+		void saveNet();
+		void saveNode();
+
+		void printNode(node * ptr);
+		void printNet(node * ptr);
 
 
 
