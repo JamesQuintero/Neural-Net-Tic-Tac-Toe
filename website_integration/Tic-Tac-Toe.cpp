@@ -44,6 +44,11 @@ void TicTacToe::run()
 
 	// readFromFile("./"+to_string(user_id)+"_test_write.txt");
 
+	//testing sqlite3 management
+	// nn.saveNet();
+
+	nn.loadNet();
+
 
 	// while(true)
 	//testing
@@ -191,6 +196,10 @@ void TicTacToe::run()
 				nn2.printNet(nn2.start);
 
 		}
+
+
+		//saves network to db file
+		nn.saveNet();
 	
 	}
 

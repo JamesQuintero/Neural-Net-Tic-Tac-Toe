@@ -13,6 +13,7 @@ int main(int argc, char** argv)
 {
 
 	// int user_id = (int)*argv[1] - 48;
+	cout<<"Remeber that a game ID must be passed in"<<endl;
 
 
 	istringstream ss(argv[1]);

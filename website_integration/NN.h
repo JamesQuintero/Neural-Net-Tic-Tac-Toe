@@ -4,7 +4,9 @@
 
 #include <iostream>
 #include <string>
-
+#include "sqlite/sqlite3.h"
+#include "BinarySearch.hpp"
+#include "Node.h"
 
 
 #ifndef NN_H
@@ -21,21 +23,6 @@ class NN
 		static const int size = 3;
 		//percentage of the "neuron" that gets increment if its path results in a good outcome
 		static constexpr double perc = 0.25;
-
-		
-		struct node
-		{
-			int** board;
-			// double good = default_good;
-			double good=0;
-			double bad=0;
-			double okay=0;
-			
-			int next_index=0;
-			int prev_index=0;
-			node** next = new node*[size*size];
-			node* prev;
-		};
 		
 
 	public:
@@ -43,6 +30,7 @@ class NN
 
 		node * start;
 		node * ptr;
+		int total_node_ids = 1;
 
 
 		NN();
@@ -52,9 +40,8 @@ class NN
 		//returns a new board containing NN's next move
 		int** AIMove(int** board, int** possible_moves);
 		void playerMove(int** board);
-		void printNode(node * ptr);
-		void printNet(node * ptr);
 		double getRatio(node * ptr);
+
 		//increments the good variables if the outcome was good
 		void goodOutcome();
 		//decrements the good variables if the outcome was good
@@ -62,6 +49,19 @@ class NN
 		//decrements the good variables only half if the outcome was okay
 		void okayOutcome();
 
+		//recursively saves neural network to db file
+		void saveNet();
+		void saveNode(sqlite3* db, node * ptr);
+
+		//uses Binary Search Tree to properly load neural network from db file
+		void loadNet();
+		node* loadNode(BinarySearchTree* bst, sqlite3* db, node * ptr, int node_id);
+
+		void printNode(node * ptr);
+		void printNet(node * ptr);
+
+
+		int dataReturn(void* notUsed, int count, char** data, char** szColName);
 
 
 };

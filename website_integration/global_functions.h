@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <sstream>
 
 // #ifndef GLOBAL_FUNCTIONS_H
 // #define GLOBAL_FUNCTIONS_H
@@ -18,16 +19,22 @@ inline extern vector<string> getPrintBoard(int** board, int size)
 		{
 			//1 = X
 			if(board[x][y]==1)
-				// cout<<"[X]";
+			{
+				cout<<"[X]";
 				to_print.push_back("1");
+			}
 			else if(board[x][y]==2)
-				// cout<<"[O]";
+			{
+				cout<<"[O]";
 				to_print.push_back("2");
+			}
 			else
-				// cout<<"[ ]";
+			{
+				cout<<"[ ]";
 				to_print.push_back("0");
+			}
 		}
-		// cout<<endl;
+		cout<<endl;
 	}
 
 	return to_print;
@@ -140,4 +147,22 @@ inline extern vector<string> readFromFile(string path)
 	myfile.close();
 
 	return output;
+}
+
+
+//returns vector of portions of string s deliminated by char delim
+inline extern vector<string> split(string s, char delim)
+{
+    std::stringstream ss;
+    ss.str(s);
+
+    vector<string> result;
+    string item;
+
+    while (getline(ss, item, delim))
+    {
+        result.push_back(item);
+    }
+
+    return result;
 }
