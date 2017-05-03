@@ -382,8 +382,6 @@ node* NN::loadNode(BinarySearchTree* bst, sqlite3* db, node * ptr, int node_id)
 		}
 	}
 
-	// cout<<endl;
-
 	return ptr;
 }
 

@@ -38,12 +38,13 @@ class TicTacToe
 		string AI_path;
 		string player_path;
 		string game_path;
+		string quit_path;
 
 		TicTacToe(int user_id);
 		
 
 		//runs the game
-		void run();
+		void run(int choice);
 		//if it was player's turn, it's now AI's turn
 		void changeTurn();
 		//returns true if it's player's turn to move. false otherwise
@@ -60,6 +61,8 @@ class TicTacToe
 		int** possibleMoves();
 		//reset's game
 		void resetGame();
+		//checks for a file that indicators whether the player wants to quit the game
+		bool checkPlayerQuit();
 
 };
 

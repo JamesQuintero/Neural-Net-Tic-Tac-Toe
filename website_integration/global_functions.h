@@ -102,6 +102,17 @@ inline extern string stringBoard(int** board, int side_size)
 	return new_board;
 }
 
+inline extern bool checkFileExists (string name)
+{
+    if (FILE *file = fopen(name.c_str(), "r"))
+    {
+        fclose(file);
+        return true;
+    }
+    else
+        return false;
+}
+
 //writes the array of strings to the specified file
 inline extern void writeToFile(string path, vector<string> lines)
 {

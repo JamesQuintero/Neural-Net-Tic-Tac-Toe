@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <string>
+#include <unistd.h>
 #include "global_functions.h"
 #include "Tic-Tac-Toe.h"
 
@@ -17,10 +18,12 @@ TicTacToe::TicTacToe(int user_id)
 
 	this->user_id = user_id;
 
-	board_path = "./"+to_string(user_id)+"_board.txt";
-	AI_path = "./"+to_string(user_id)+"_AI_move.txt";
-	player_path = "./"+to_string(user_id)+"_player_move.txt";
-	game_path = "./"+to_string(user_id)+"_game.txt";
+	string base = "user_data";
+	board_path = "./"+base+"/"+to_string(user_id)+"_board.txt";
+	AI_path = "./"+base+"/"+to_string(user_id)+"_AI_move.txt";
+	player_path = "./"+base+"/"+to_string(user_id)+"_player_move.txt";
+	game_path = "./"+base+"/"+to_string(user_id)+"_game.txt";
+	quit_path = "./"+base+"/"+to_string(user_id)+"_quit.txt";
 
 	//player is O
 	player_piece = 2;
@@ -31,38 +34,24 @@ TicTacToe::TicTacToe(int user_id)
 }
 
 //runs the game
-void TicTacToe::run()
+void TicTacToe::run(int choice)
 {
-	
-
-	// vector<string> write;
-	// write.push_back("This");
-	// write.push_back("is a test write");
-	// write.push_back("...");
-
-	// writeToFile("./"+to_string(user_id)+"_test_write.txt", write);
-
-	// readFromFile("./"+to_string(user_id)+"_test_write.txt");
-
-	//testing sqlite3 management
-	// nn.saveNet();
-
 	nn.loadNet();
 
 
 	// while(true)
-	//testing
 	while(true)
 	{
-
+		cout<<endl;
 		cout<<"Menu: "<<endl;
 		cout<<"1) Human vs AI"<<endl;
 		cout<<"2) AI vs AI"<<endl;
 		cout<<"3) Print Neural Nets"<<endl;
 
-		cout<<"Choice: ";
-		int choice;
-		cin>>choice;
+		// cout<<"Choice: ";
+		// int choice;
+		// cin>>choice;
+		choice=1;
 
 
 		//Human vs AI
@@ -75,9 +64,15 @@ void TicTacToe::run()
 
 				bool player_won=false;
 				bool AI_won=false;
+				//success= true as long as there are empty spots on the board
 				bool success=true;
+				//checks whether player wants to quit
+				bool player_quit = false;
+
+
+
 				//goes forever until someone wins or until someone has an unsuccessful move (board is full)
-				while(player_won==false && AI_won==false && success==true)
+				while(player_won==false && AI_won==false && success==true && player_quit==false)
 				{
 
 					if(playerWon())
@@ -95,7 +90,7 @@ void TicTacToe::run()
 						cout<<endl<<endl;
 						nn.goodOutcome();
 					}
-					//if no one's yet run, continue the game
+					//if no one's yet won, continue the game
 					else
 					{
 						//player moves
@@ -107,7 +102,15 @@ void TicTacToe::run()
 
 						changeTurn();
 					}
+
+					//sleep for 0.5 seconds
+					usleep(500000);
+
+					//checks whether player wants to quit
+					player_quit = checkPlayerQuit();
+
 				}
+
 
 				//game was a tie
 				if (success==false)
@@ -199,7 +202,7 @@ void TicTacToe::run()
 
 
 		//saves network to db file
-		nn.saveNet();
+		// nn.saveNet();
 	
 	}
 
@@ -229,15 +232,20 @@ bool TicTacToe::playersMove()
 			return false;
 
 		//have user input be in a file that we check for
+		//if it doesn't exist, don't move
+		// changeTurn(); so that it's still the player's turn when the run while changes turn and goes again
 
-		cout<<"Row: ";
-		cin>>row;
 
-		cout<<"Col: ";
-		cin>>col;
-		cout<<endl;
+		// cout<<"Row: ";
+		// cin>>row;
 
-		//determines if given move is a possible move
+		// cout<<"Col: ";
+		// cin>>col;
+		// cout<<endl;
+
+		if(fileExists player file)
+		{
+			//determines if given move is a possible move
 		for(int x =0; x < size*size; x++)
 		{
 			if(possible_moves[x][0]==row && possible_moves[x][1]==col)
@@ -245,6 +253,7 @@ bool TicTacToe::playersMove()
 				valid_move=true;
 				break;
 			}
+		}
 		}
 
 	}
@@ -415,4 +424,11 @@ void TicTacToe::resetGame()
 
 	nn.ptr = nn.start;
 	nn2.ptr = nn2.start;
+}
+
+//checks for a file that indicates whether the player wants to quit the game
+bool TicTacToe::checkPlayerQuit()
+{
+	// string file = "./user_data/"+
+	return false;
 }

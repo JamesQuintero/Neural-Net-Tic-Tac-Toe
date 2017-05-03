@@ -1,0 +1,20 @@
+1) User goes to page
+2) User selects to play against new AI or existing AI
+	*) File "12345_choice.txt" contains menu choice integer
+3) TTT starts with 12345 and menu choice as argv elements
+4) TTT loads the NN
+5) AI makes its move
+	*) File "12345_AI_move.txt" contains board position of the AI's move
+	*) File "12345_board.txt" contains current ttt board.
+6) TTT starts checking every .5 seconds for player's move file
+7) Website is sending AJAX request every .5 seconds to php that checks for AI's move file
+	*) If found, file is deleted, website displays the move, and requests are stopped.
+8) User makes a move
+	*) File "12345_Player_move.txt" contains player's move
+	*) Website stats polling again
+9) TTT loads player's move
+	*) File is deleted
+10) Repeat step 5+.
+11) If user chooses to quit, 
+	*) File "12345_quit.txt" is made
+12) TTT checks for user quit file after every game. deletes file and exits program if found.
