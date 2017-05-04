@@ -102,7 +102,7 @@ inline extern string stringBoard(int** board, int side_size)
 	return new_board;
 }
 
-inline extern bool checkFileExists (string name)
+inline extern bool checkFileExists(string name)
 {
     if (FILE *file = fopen(name.c_str(), "r"))
     {
@@ -119,9 +119,6 @@ inline extern void writeToFile(string path, vector<string> lines)
 	ofstream myfile;
 	myfile.open (path);
 
-	//0 if file has been read, 1 if it has.
-	myfile<<"0"<<"\n";
-
 	for(int x =0; x < lines.size(); x++)
 		myfile << lines[x] <<"\n";
 
@@ -136,20 +133,15 @@ inline extern vector<string> readFromFile(string path)
 	string line;
 
 
-	ifstream myfile (path);
+	ifstream myfile(path);
 
 
 	if (myfile.is_open())
 	{
-		// string line;
-		// getline(myfile, line);
-
-		// int length = stoi(line, 10);
-		// cout<<"Length: "<<length<<endl;
-
 		while (getline(myfile,line))
 		{
 			cout << line << '\n';
+			output.push_back(line);
 		}
 	}
 	else

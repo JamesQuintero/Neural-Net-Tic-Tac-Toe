@@ -233,15 +233,15 @@ void NN::loadNet()
 	//if net already exists, remove default start node so that it can be loaded from net
 	if (FILE *file = fopen("ttt_NN.db", "r"))
 	{
-        fclose(file);
+				fclose(file);
 
-        //releases old start
-        delete start;
-        start=NULL;
+				//releases old start
+				delete start;
+				start=NULL;
 
-        total_node_ids--;
-        cout<<"Net already exists, so remove default head pointer"<<endl;
-    }
+				total_node_ids--;
+				cout<<"Net already exists, so remove default head pointer"<<endl;
+		}
 
 
 	//opens sqlite file
@@ -259,7 +259,6 @@ void NN::loadNet()
 
 	//starts by getting the start node, which is where node_id=1.
 	//recursively gets the current node's next nodes from the db
-	// node* copy = start;
 	start = loadNode(&net, db, start, 1);
 
 	//start at start
@@ -280,7 +279,6 @@ void NN::loadNet()
 //binary search tree points to existing nodes when reconstructing the neural network
 node* NN::loadNode(BinarySearchTree* bst, sqlite3* db, node * ptr, int node_id)
 {
-	// cout<<"loadNode();"<<endl;
 
 	//returns pointer to node if it exists
 	node* existing_node = bst->find(node_id);
@@ -294,61 +292,56 @@ node* NN::loadNode(BinarySearchTree* bst, sqlite3* db, node * ptr, int node_id)
 	if(existing_node == NULL)
 	{
 		existed = false;
-		// cout<<"Node doesn't exist, so load from db"<<endl;
 
+				sqlite3_stmt* stmt;
+				int s = SQLITE_ROW;
 
-        sqlite3_stmt* stmt;
-        int s = SQLITE_ROW;
+				string selectQuery = "SELECT * FROM ttt_neural_net WHERE node_id="+to_string(node_id)+" LIMIT 1";
+				sqlite3_stmt *selectStmt;
 
-        string selectQuery = "SELECT * FROM ttt_neural_net WHERE node_id="+to_string(node_id)+" LIMIT 1";
-        sqlite3_stmt *selectStmt;
+				if(sqlite3_prepare_v2(db, selectQuery.c_str(), selectQuery.size()+1, &selectStmt, NULL) == SQLITE_OK)
+				{
+					sqlite3_step (selectStmt);
 
-        if(sqlite3_prepare_v2(db, selectQuery.c_str(), selectQuery.size()+1, &selectStmt, NULL) == SQLITE_OK)
-        {
-        	sqlite3_step (selectStmt);
+					int node_id = sqlite3_column_int(selectStmt, 0);
+					string board = (char*)sqlite3_column_text(selectStmt, 1);
+					double good = sqlite3_column_double(selectStmt, 2);
+					double bad = sqlite3_column_double(selectStmt, 3);
+					double okay = sqlite3_column_double(selectStmt, 4);
+					int next_index = sqlite3_column_double(selectStmt, 5);
+					string next = (char*)sqlite3_column_text(selectStmt, 6);
 
-	       	int node_id = sqlite3_column_int(selectStmt, 0);
-	       	string board = (char*)sqlite3_column_text(selectStmt, 1);
-	       	double good = sqlite3_column_double(selectStmt, 2);
-	       	double bad = sqlite3_column_double(selectStmt, 3);
-	       	double okay = sqlite3_column_double(selectStmt, 4);
-	       	int next_index = sqlite3_column_double(selectStmt, 5);
-	       	string next = (char*)sqlite3_column_text(selectStmt, 6);
+					sqlite3_finalize(selectStmt);
 
-	        sqlite3_finalize(selectStmt);
+					// cout<<"node_id retrieved: "<<node_id<<endl;
+					// cout<<"Board: "<<board<<endl;
+					// cout<<"Good: "<<good<<endl;
+					// cout<<"Bad: "<<bad<<endl;
+					// cout<<"Okay: "<<okay<<endl;
+					// cout<<"next_index: "<<next_index<<endl;
+					// cout<<"Next: "<<next<<endl;
 
-	        // cout<<"node_id retrieved: "<<node_id<<endl;
-	        // cout<<"Board: "<<board<<endl;
-	        // cout<<"Good: "<<good<<endl;
-	        // cout<<"Bad: "<<bad<<endl;
-	        // cout<<"Okay: "<<okay<<endl;
-	        // cout<<"next_index: "<<next_index<<endl;
-	        // cout<<"Next: "<<next<<endl;
+					vector<string> next_vector = split(next, ',');
+					for(int x =0; x < next_vector.size(); x++)
+						next_node_ids.push_back(std::stoi(next_vector[x]));
 
-	        vector<string> next_vector = split(next, ',');
-	        for(int x =0; x < next_vector.size(); x++)
-	        {
-	        	next_node_ids.push_back(std::stoi(next_vector[x]));
-	        	// cout<<x<<") "<<next_vector[x]<<endl;
-	        }
+					existing_node = new node();
+					existing_node->node_id = node_id;
+					existing_node->board = matrixBoard(board, size);
+					existing_node->good = good;
+					existing_node->bad = bad;
+					existing_node->okay = okay;
+					existing_node->next_index = 0;
+					existing_node->next = new node*[size*size];
 
-	        existing_node = new node();
-	        existing_node->node_id = node_id;
-	        existing_node->board = matrixBoard(board, size);
-	        existing_node->good = good;
-	        existing_node->bad = bad;
-	        existing_node->okay = okay;
-	        existing_node->next_index = 0;
-	        existing_node->next = new node*[size*size];
-
-	        //adds to binary search tree for easier linking later on
-			bst->insert(existing_node);
-        }
-        else
-        {
-        	cout<<"Error with select query: "<<selectQuery<<endl;
-        	return NULL;
-        }
+					//adds to binary search tree for easier linking later on
+					bst->insert(existing_node);
+				}
+				else
+				{
+					cout<<"Error with select query: "<<selectQuery<<endl;
+					return NULL;
+				}
 		
 	}
 
@@ -424,7 +417,7 @@ void NN::saveNet()
 
 	if(db)
 		sqlite3_close(db);
-     
+		 
 }
 
 //saves node to db file

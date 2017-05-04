@@ -36,175 +36,110 @@ TicTacToe::TicTacToe(int user_id)
 //runs the game
 void TicTacToe::run(int choice)
 {
-	nn.loadNet();
 
-
-	// while(true)
-	while(true)
+	//user wants to play a new AI
+	if(choice==1)
 	{
-		cout<<endl;
-		cout<<"Menu: "<<endl;
-		cout<<"1) Human vs AI"<<endl;
-		cout<<"2) AI vs AI"<<endl;
-		cout<<"3) Print Neural Nets"<<endl;
 
-		// cout<<"Choice: ";
-		// int choice;
-		// cin>>choice;
-		choice=1;
-
-
-		//Human vs AI
-		if(choice==1)
-		{
-				nn.piece = AI_piece;
-
-				cout<<"New game Human vs AI"<<endl;
-				resetGame();
-
-				bool player_won=false;
-				bool AI_won=false;
-				//success= true as long as there are empty spots on the board
-				bool success=true;
-				//checks whether player wants to quit
-				bool player_quit = false;
-
-
-
-				//goes forever until someone wins or until someone has an unsuccessful move (board is full)
-				while(player_won==false && AI_won==false && success==true && player_quit==false)
-				{
-
-					if(playerWon())
-					{
-						player_won=true;
-						cout<<endl;
-						cout<<"Player WON"<<endl;
-						cout<<endl<<endl;
-						nn.badOutcome();
-					}
-					else if(AIWon())
-					{
-						AI_won=true;
-						cout<<"AI WON"<<endl;
-						cout<<endl<<endl;
-						nn.goodOutcome();
-					}
-					//if no one's yet won, continue the game
-					else
-					{
-						//player moves
-						if(isPlayersTurn())
-							success = playersMove();
-						//AI moves
-						else
-							success = AIMove(1);
-
-						changeTurn();
-					}
-
-					//sleep for 0.5 seconds
-					usleep(500000);
-
-					//checks whether player wants to quit
-					player_quit = checkPlayerQuit();
-
-				}
-
-
-				//game was a tie
-				if (success==false)
-					nn.badOutcome();
-
-		}
-		//AI vs AI
-		else if(choice==2)
-		{
-				nn.piece = AI_piece;
-				nn2.piece = player_piece;
-
-				int num_games=0;
-				cout<<"Num games: ";
-				cin>>num_games;
-
-				for(int x =0; x < num_games; x++)
-				{
-						cout<<"New game AI vs AI"<<endl;
-						resetGame();
-
-						bool AI_won=false;
-						bool AI2_won=false;
-						bool success=true;
-						//goes forever until someone wins or until someone has an unsuccessful move (board is full)
-						while(AI_won==false && AI2_won==false && success==true)
-						{
-
-							if(AIWon())
-							{
-								AI_won=true;
-								cout<<"AI WON"<<endl;
-								cout<<endl<<endl;
-								nn.goodOutcome();
-								nn2.badOutcome();
-							}
-							//AI #2 counts as player
-							else if(playerWon())
-							{
-								AI2_won=true;
-								cout<<endl;
-								cout<<"AI2 WON"<<endl;
-								cout<<endl<<endl;
-								nn2.goodOutcome();
-								nn.badOutcome();
-							}
-							//if no one's yet run, continue the game
-							else
-							{
-								//player moves
-								if(isPlayersTurn())
-									success = AIMove(2);
-								//AI moves
-								else
-									success = AIMove(1);
-
-								changeTurn();
-							}
-
-							// system("pause");
-
-						}
-
-						//game was a tie
-						if (success==false)
-						{
-							nn.badOutcome();
-							nn2.badOutcome();
-							// nn2.okayOutcome();
-						}
-				}
-				
-		}
-		//Prints the neural nets
-		else
-		{
-			cout<<"1) AI #1: "<<endl;
-			cout<<"2) AI #2: "<<endl;
-
-			cout<<"Choice: ";
-			cin>>choice;
-
-			if(choice==1)
-				nn.printNet(nn.start);
-			else
-				nn2.printNet(nn2.start);
-
-		}
-
-
-		//saves network to db file
-		// nn.saveNet();
-	
 	}
+	//user wants to play a trained AI
+	else
+	{
+		nn.loadNet();
+	}
+
+
+
+		nn.piece = AI_piece;
+
+		cout<<"New game Human vs AI"<<endl;
+		resetGame();
+
+		bool player_won=false;
+		bool AI_won=false;
+		//success= true as long as there are empty spots on the board
+		bool success=true;
+		//checks whether player wants to quit
+		bool player_quit = false;
+
+
+		vector<string> game_outcome;
+
+		int total_wait = 0;
+
+		//goes forever until someone wins or until someone has an unsuccessful move (board is full)
+		while(player_won==false && AI_won==false && success==true && player_quit==false)
+		{
+
+			
+
+			if(playerWon())
+			{
+				player_won=true;
+				cout<<endl;
+				cout<<"Player WON"<<endl;
+				cout<<endl<<endl;
+				nn.badOutcome();
+
+				game_outcome.push_back("1");
+			}
+			else if(AIWon())
+			{
+				AI_won=true;
+				cout<<"AI WON"<<endl;
+				cout<<endl<<endl;
+				nn.goodOutcome();
+				game_outcome.push_back("2");
+			}
+			//if no one's yet won, continue the game
+			else
+			{
+				//sleep for 0.5 seconds
+				usleep(500000);
+				total_wait += 500000;
+
+				//player moves
+				if(isPlayersTurn())
+				{
+					//if player did move, reset timer
+					if(checkFileExists(player_path))
+						total_wait = 0;
+
+					success = playersMove();
+
+					
+				}
+				//AI moves
+				else
+				{
+					success = AIMove(1);
+				}
+
+				changeTurn();
+			}
+
+			
+
+			//checks whether player wants to quit, or has been inactive for >=5 minutes
+			player_quit = checkPlayerQuit();
+			if(player_quit || total_wait>=300000000)
+			{
+				player_quit = true;
+				game_outcome.push_back("3");
+			}
+
+		}
+
+
+		//game was a tie
+		if (success==false)
+		{
+			nn.badOutcome();
+			game_outcome.push_back("0");
+		}
+
+
+		writeToFile(game_path, game_outcome);
 
 }
 
@@ -215,7 +150,7 @@ bool TicTacToe::playersMove()
 	cout<<"Player's move. "<<endl;
 	cout<<"Current board: "<<endl;
 	vector<string> to_print = getPrintBoard(board, size);
-	writeToFile(board_path, to_print);
+	// writeToFile(board_path, to_print);
 	
 
 	int row=0;
@@ -234,7 +169,7 @@ bool TicTacToe::playersMove()
 		//have user input be in a file that we check for
 		//if it doesn't exist, don't move
 		// changeTurn(); so that it's still the player's turn when the run while changes turn and goes again
-
+		// player_path
 
 		// cout<<"Row: ";
 		// cin>>row;
@@ -243,17 +178,39 @@ bool TicTacToe::playersMove()
 		// cin>>col;
 		// cout<<endl;
 
-		if(fileExists player file)
+		vector<string> player_move = readFromFile(player_path);
+
+
+
+		//if player did make a move
+		if(player_move.size()!=0)
 		{
+			int slot_number = stoi(player_move[0]);
+			row = (int)slot_number/3;
+			col = (int)slot_number%3;
+
+			cout<<"row: "<<row<<endl;
+			cout<<"col: "<<col<<endl;
+
 			//determines if given move is a possible move
-		for(int x =0; x < size*size; x++)
-		{
-			if(possible_moves[x][0]==row && possible_moves[x][1]==col)
+			for(int x =0; x < size*size; x++)
 			{
-				valid_move=true;
-				break;
+				if(possible_moves[x][0]==row && possible_moves[x][1]==col)
+				{
+					valid_move=true;
+					break;
+				}
 			}
+
+			//deletes player file
+			remove(player_path.c_str());
 		}
+		//if player hasn't yet moved, change turn to counteract the other changeturn, and have nothing else change to create a loop. 
+		else
+		{
+			cout<<"player move size is 0"<<endl;
+			changeTurn();
+			return true;
 		}
 
 	}
@@ -263,6 +220,10 @@ bool TicTacToe::playersMove()
 
 	//add player's move to neural net
 	nn.playerMove(board);
+
+	//sends the website the new board
+	to_print = getPrintBoard(board, size);
+	writeToFile(board_path, to_print);
 
 	cout<<endl<<endl<<endl;
 
@@ -282,11 +243,7 @@ bool TicTacToe::AIMove(int AI_version)
 
 
 	int** new_board;
-	// //only when player vs AI
-	// if(AI_version==0)
-	// {
-	// 	new_board = nn.AIMove(board, possible_moves);
-	// }
+
 	//AI #1 moves, and its move gets added to AI #2
 	if(AI_version==1)
 	{
@@ -299,11 +256,37 @@ bool TicTacToe::AIMove(int AI_version)
 		new_board = nn2.AIMove(board, possible_moves);
 		nn.playerMove(new_board);
 	}
+
+	//gets difference between boards so that AI's move can be sent to player
+	//website uses 0-8 slot numbers instead of row and col 
+	int slot_num=0;
+	for(int x =0; x < size; x++)
+	{
+		for(int y =0; y < size; y++)
+		{
+			//if difference found, stop
+			if(board[x][y] != new_board[x][y])
+				goto label;
+			//no difference, so increment
+			else
+				slot_num++;
+		}
+	}
+
+	//save AI's move to file
+	label:
+	vector<string> lines;
+	lines.push_back(to_string(slot_num));
+	writeToFile(AI_path, lines);
+
+
 	board = new_board;
 
 	//prints the board
 	cout<<"New board: "<<endl;
 	vector<string> to_print = getPrintBoard(board, size);
+	//sends the website the new board
+	writeToFile(board_path, to_print);
 
 	cout<<endl<<endl<<endl;
 
@@ -429,6 +412,12 @@ void TicTacToe::resetGame()
 //checks for a file that indicates whether the player wants to quit the game
 bool TicTacToe::checkPlayerQuit()
 {
-	// string file = "./user_data/"+
-	return false;
+	//true if player has quit
+	bool player_quits = checkFileExists(quit_path);
+
+	//delete file if player quit so that they can start a new game
+	if(player_quits)
+		remove(quit_path.c_str());
+
+	return player_quits;
 }
